@@ -1,0 +1,29 @@
+{
+  "name": "registration_page",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "server:dev": "nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elsiklab/apollo-registration.git"
+  },
+  "author": "Justin & Deepak",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/elsiklab/apollo-registration/issues"
+  },
+  "homepage": "https://github.com/elsiklab/apollo-registration#readme",
+  "dependencies": {
+    "axios": "^0.17.1",
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "express-hbs": "^1.0.4",
+    "express-validator": "^4.3.0",
+    "path": "^0.12.7"
+  }
+}
