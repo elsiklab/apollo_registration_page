@@ -41,56 +41,75 @@ app.get('/registration/:site', [
     // const html = indexTemplate({ site: req.site })
     // res.sendFile(html)
 
-     res.render('index', { site: req.params.site });
+    let selectedSite = config.sites.filter((site) => {
+    	return site.name === req.params.site
+    })
+
+    if(selectedSite.length > 0){
+    	res.render('index', { 
+    		site: selectedSite[0].name, 
+    		site_url: selectedSite[0].url
+    	});
+    }  else {
+    	return res.status(400).send("<p>This is not the page you are looking for</p>")
+    }
 });
 
 app.post('/registration/:site', [
 	check('mail').isEmail().withMessage('must be a valid email address').trim().normalizeEmail(),
-	check('firstName', 'first name is required').isLength({ min: 8 }),
-	check('lastName', 'first name is required').isLength({ min: 8 }),
+	check('firstName', 'first name is required').isLength({ min: 1 }),
+	check('lastName', 'first name is required').isLength({ min: 1 }),
 	check('pass1', 'passwords must be at least 8 chars long').isLength({ min: 8 }),
 	check('pass2', 'passwords must be at least 8 chars long').isLength({ min: 8 }),
 	],function(req, res) {
 
-  const errors = validationResult(req);
+    const errors = validationResult(req);
 
-  if (!errors.isEmpty()) {
-    return res.status(422).json({ errors: errors.mapped() });
-  }
+	if (!errors.isEmpty()) {
+		console.log(errors)
+		return res.status(422).json({ errors: errors.mapped() });
+	}
 
-  const newUser = matchedData(req);
-
-  // console.log(newUser)
-
-  axios.post( 'http://bovinegenome.org/apollo-lsaa/user/createUser', {
- 	email: newUser.email,
-    newPassword: newUser.pass1,
-    firstName: newUser.firstName,
-    lastName: newUser.lastName,
-    role: 'user',
-    username: 'admin_email',
-    password: 'admin_password'
-  }).then((resp) => {
-	console.log(resp);
-  	// send off the user's group
-  	axios.post( 'http://bovinegenome.org/apollo-lsaa/user/addUserToGroup', {
-	    username: "admin_username",
-	    password: "admin_password",
-	    group: "group name",
-	    user: newUser.email
-	}).then((resp) => {
-		return res.status(200).json({ success: true })
-	}).catch((error) => {
-		throw(error)
+	let selectedSite = config.sites.filter((site) => {
+		return site.name === req.params.site
 	})
-  }).catch((error) => {
-    return res.status(422).json({ errors: error });
-  })
 
-});
+    if(selectedSite.length > 0){
 
-app.get('/registration/success/:site', function(req, res) {
-     res.render('success', { site_url: 'www.google.com/stuff' });
+	  const newUser = matchedData(req);
+
+	  axios.post( selectedSite[0].user_url, {
+	 	email: newUser.mail,
+	    newPassword: newUser.pass1,
+	    firstName: newUser.firstName,
+	    lastName: newUser.lastName,
+	    role: selectedSite[0].role,
+	    username: selectedSite[0].admin.username,
+	    password: selectedSite[0].admin.password
+	  }).then((userResp) => {
+		console.log({ user: userResp.data });
+
+		if(JSON.stringify(userResp.data) === '{}'){
+		  	// send off the user's group
+		  	axios.post( selectedSite[0].group_url, {
+			    username: selectedSite[0].admin.username,
+			    password: selectedSite[0].admin.password,
+			    group: selectedSite[0].group,
+			    user: newUser.mail
+			}).then((groupResp) => {
+				console.log({ group: groupResp.data })
+				return res.status(200).json({ success: true })
+			}).catch((error) => {
+				throw(error)
+			})
+		} else {
+			throw(userResp.data.error);
+		}
+	  }).catch((error) => {
+	    return res.status(422).json({ errors: error });
+	  })
+    }
+
 });
 
 app.listen(5000);

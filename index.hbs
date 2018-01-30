@@ -63,6 +63,10 @@
         border: 1px solid gray;
       }
 
+      .modal-content {
+        background-color: #f5f5f5;
+        padding: 100px 2px;
+      }
     </style>
     <title>Apollo Registration</title>
   </head>
@@ -96,6 +100,21 @@
       <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
     </form>
 
+    <div id="successModal" class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+         <h3 class="display-3">Success!</h3>
+          <div class="my-3">
+            <h4 class="display-5">An account has been created for <span id="username"></span></h4>
+            <div class="alert alert-light my-5" role="alert">
+              <a href="#" class="h4">{{site_url}}</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="http://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
@@ -107,18 +126,25 @@
         var regex = /^([a-zA-Z0-9_.+-])+\@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
         return regex.test(email);
       }
-      $(document).ready(function() {
 
-        $('input:text, input:password').on('blur change keyup', function(){
-          var data = {
-            mail: isEmail($('#inputEmail').val()),
+      function getData(){
+        return {
+            mail: $('#inputEmail').val(),
             firstName: $('#firstName').val(),
             lastName: $('#lastName').val(),
             pass1: $('#inputPassword').val(),
             pass2: $('#reqPassword').val(),
           }
+      }
 
-          if(data.mail && 
+      $(document).ready(function() {
+
+
+        $('input:text, input:password').on('blur change keyup', function(){
+
+          var data = getData();
+
+          if( isEmail(data.mail) && 
              data.firstName && 
              data.lastName && 
              data.pass1.length > 7 && 
@@ -126,24 +152,25 @@
 
             $('#submit').prop( "disabled", false );
 
-            var submit = $.post('/submit', data).done((result) => {
-
-            }).fail((result) => {
-
-            }).always((result) => {
-              $('#submit').prop( "disabled", true );
-            });
-
           } else {
             $('#submit').prop( "disabled", true );
           }
+
         })
 
         $('#submit').click(function(event){
           event.preventDefault();
           $(this).html("<i class='fa fa-spinner fa-spin '></i> Creating");
           $('#submit').prop( "disabled", true );
+
+          var data = getData();
+
+          $.post(window.location.pathname, data).done((result) => {
+            $('#username').html($('#inputEmail').val());
+            $('#successModal').modal('show');
+          });
         })
+
       })
     </script>
   </body>
