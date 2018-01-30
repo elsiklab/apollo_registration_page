@@ -60,11 +60,29 @@ app.post('/registration/:site', [
 
   const newUser = matchedData(req);
 
-  console.log(newUser)
+  // console.log(newUser)
 
-  axios.post( 'www.google.com', newUser).then((resp) => {
-	 console.log(resp);
-	 return res.status(200).json({ success: true })
+  axios.post( 'http://bovinegenome.org/apollo-lsaa/user/createUser', {
+ 	email: newUser.email,
+    newPassword: newUser.pass1,
+    firstName: newUser.firstName,
+    lastName: newUser.lastName,
+    role: 'user',
+    username: 'admin_email',
+    password: 'admin_password'
+  }).then((resp) => {
+	console.log(resp);
+  	// send off the user's group
+  	axios.post( 'http://bovinegenome.org/apollo-lsaa/user/addUserToGroup', {
+	    username: "admin_username",
+	    password: "admin_password",
+	    group: "group name",
+	    user: newUser.email
+	}).then((resp) => {
+		return res.status(200).json({ success: true })
+	}).catch((error) => {
+		throw(error)
+	})
   }).catch((error) => {
     return res.status(422).json({ errors: error });
   })
@@ -72,7 +90,7 @@ app.post('/registration/:site', [
 });
 
 app.get('/registration/success/:site', function(req, res) {
-    res.sendFile(path.join(__dirname + '/success.html'));
+     res.render('success', { site_url: 'www.google.com/stuff' });
 });
 
 app.listen(5000);
