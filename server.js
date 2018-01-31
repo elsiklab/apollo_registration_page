@@ -66,7 +66,7 @@ app.post('/registration/:site', [
     const errors = validationResult(req);
 
 	if (!errors.isEmpty()) {
-		console.log(errors)
+		// console.log(errors)
 		return res.status(422).json({ errors: errors.mapped() });
 	}
 
@@ -87,7 +87,7 @@ app.post('/registration/:site', [
 	    username: selectedSite[0].admin.username,
 	    password: selectedSite[0].admin.password
 	  }).then((userResp) => {
-		console.log({ user: userResp.data });
+		// console.log({ user: userResp.data });
 
 		if(JSON.stringify(userResp.data) === '{}'){
 		  	// send off the user's group
@@ -97,7 +97,7 @@ app.post('/registration/:site', [
 			    group: selectedSite[0].group,
 			    user: newUser.mail
 			}).then((groupResp) => {
-				console.log({ group: groupResp.data })
+				// console.log({ group: groupResp.data })
 				return res.status(200).json({ success: true })
 			}).catch((error) => {
 				throw(error)

@@ -107,7 +107,7 @@
           <div class="my-3">
             <h4 class="display-5">An account has been created for <span id="username"></span></h4>
             <div class="alert alert-light my-5" role="alert">
-              <a href="#" class="h4">{{site_url}}</a>
+              <a href="{{site_url}}" class="h4">Click HERE to go to Apollo</a>
             </div>
           </div>
         </div>
@@ -137,6 +137,14 @@
           }
       }
 
+      function reset(){
+          $('#inputEmail').val('');
+          $('#firstName').val('');
+          $('#lastName').val('');
+          $('#inputPassword').val('');
+          $('#reqPassword').val('');
+      }
+
       $(document).ready(function() {
 
 
@@ -145,8 +153,8 @@
           var data = getData();
 
           if( isEmail(data.mail) && 
-             data.firstName && 
-             data.lastName && 
+             data.firstName.length > 1 && 
+             data.lastName.length > 1 && 
              data.pass1.length > 7 && 
              data.pass1 === data.pass2){
 
@@ -156,11 +164,12 @@
             $('#submit').prop( "disabled", true );
           }
 
-        })
+        });
 
         $('#submit').click(function(event){
           event.preventDefault();
-          $(this).html("<i class='fa fa-spinner fa-spin '></i> Creating");
+          let $this = $(this)
+          $this.html("<i class='fa fa-spinner fa-spin '></i> Creating");
           $('#submit').prop( "disabled", true );
 
           var data = getData();
@@ -168,8 +177,17 @@
           $.post(window.location.pathname, data).done((result) => {
             $('#username').html($('#inputEmail').val());
             $('#successModal').modal('show');
+          }).fail((error) => {
+            alert(error.responseJSON.errors);
+          }).always(() => {
+            $('#submit').prop( "disabled", false );
+            $this.html("Create Account");
           });
-        })
+        });
+
+        $('#successModal').on('hide.bs.modal', (e) => {
+          reset();
+        });
 
       })
     </script>
