@@ -42,7 +42,7 @@ app.get('/registration/:site', [
     // res.sendFile(html)
 
     let selectedSite = config.sites.filter((site) => {
-    	return site.name === req.params.site
+    	return site.name.toLowerCase() === req.params.site.toLowerCase()
     })
 
     if(selectedSite.length > 0){
