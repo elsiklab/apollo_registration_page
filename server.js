@@ -7,9 +7,10 @@ const path = require('path');
 const bodyParser = require('body-parser');
 // validations
 // const expressValidator = require('express-validator');
+const PORT = process.env.NODE_PORT || 5000;
 
-const { check, validationResult } = require('express-validator/check');
-const { matchedData, sanitize } = require('express-validator/filter');
+const { check, validationResult } = require('express-validator');
+const { matchedData, sanitize } = require('express-validator');
 
 const axios = require('axios');
 
@@ -29,6 +30,25 @@ app.set('views', path.join(__dirname,'/'));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use('/registration/static', express.static(__dirname + '/public'));
+
+app.get('/registration/favicon.ico', function(req, res) {
+	res.sendFile(path.join(__dirname + '/favicon.ico'));
+});
+
+app.get('/registration', (req, res) => {
+  let siteNames = [];
+  let siteOrgs = [];
+  for (var i=0; i<config.sites.length; i++) {
+    siteNames.push(config.sites[i].name);
+    siteOrgs.push(config.sites[i].organism);
+  }
+  res.render('select', {
+	  siteNames: siteNames,
+	  siteOrgs: siteOrgs
+  });
+});
 
 app.get('/registration/:site', [
 
@@ -56,7 +76,7 @@ app.get('/registration/:site', [
 });
 
 app.post('/registration/:site', [
-	check('mail').isEmail().withMessage('must be a valid email address').trim().normalizeEmail(),
+	check('mail').isEmail().withMessage('must be a valid email address').trim(),
 	check('firstName', 'first name is required').isLength({ min: 1 }),
 	check('lastName', 'first name is required').isLength({ min: 1 }),
 	check('pass1', 'passwords must be at least 8 chars long').isLength({ min: 8 }),
@@ -88,8 +108,8 @@ app.post('/registration/:site', [
 	    password: selectedSite[0].admin.password
 	  }).then((userResp) => {
 		// console.log({ user: userResp.data });
-
-		if(JSON.stringify(userResp.data) === '{}'){
+		//if( (JSON.stringify(userResp.data)) === '{}'){
+		if (userResp.data["email"]) {
 		  	// send off the user's group
 		  	axios.post( selectedSite[0].group_url, {
 			    username: selectedSite[0].admin.username,
@@ -98,7 +118,7 @@ app.post('/registration/:site', [
 			    user: newUser.mail
 			}).then((groupResp) => {
 				// console.log({ group: groupResp.data })
-				return res.status(200).json({ success: true })
+				return res.status(200).json({ success: true });
 			}).catch((error) => {
 				throw(error)
 			})
@@ -112,4 +132,6 @@ app.post('/registration/:site', [
 
 });
 
-app.listen(5000);
+app.listen(PORT, () => {
+   console.log( 'Server listening on port %d in %s mode', PORT, app.settings.env );
+});
